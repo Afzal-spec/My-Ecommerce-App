@@ -7,44 +7,33 @@ import authRoutes from './routes/authRoute.js'
 import categoryRoutes from './routes/categoryRoutes.js'
 import productRoutes from './routes/productRoutes.js'
 import cors from 'cors'
-import path from "path";
-import { fileURLToPath } from 'url';
-
-// Configure environment variables
+//configure env
 dotenv.config();
 
-// Database connection
+//database config
 connectDB();
+//rest object
+const app = express()
 
-// ES module fix
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = path.dirname(__filename);
-
-// Create an Express app
-const app = express();
-
-// Middleware
+//middlewares
 app.use(cors());
 app.use(express.json());
 app.use(morgan('dev'));
 
-// Serve static files from the React app
-app.use(express.static(path.join(__dirname, './client/build')));
-
-// API routes
+//routes
 app.use("/api/v1/auth", authRoutes);
 app.use("/api/v1/category", categoryRoutes);
-app.use("/api/v1/product", productRoutes);
+app.use("/api/v1/product", productRoutes)
 
-// Serve React app for all other requests
-app.get('*', (req, res) => {
-    res.sendFile(path.join(__dirname, "./client/build/index.html"));
+//rest api
+app.get('/',(req,res) => {
+    res.send("<h1>welcome to ecommerce app</h1>");
 });
 
-// Port configuration
+//port
 const PORT = process.env.PORT || 8080;
 
-// Start server
-app.listen(PORT, () => {
-    console.log(`Server running in ${process.env.NODE_ENV} mode on port ${PORT}`.bgCyan.white);
+//run listen
+app.listen(PORT,() => {
+    console.log(`Server Running on ${process.env.DEV_MODE} mode on ${PORT}`.bgCyan.white);
 });
