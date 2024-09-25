@@ -7,7 +7,7 @@ import authRoutes from './routes/authRoute.js';
 import categoryRoutes from './routes/categoryRoutes.js';
 import productRoutes from './routes/productRoutes.js';
 import cors from 'cors';
-import path from 'path'; // Import path for serving static files
+import path from 'path';
 
 // Configure env
 dotenv.config();
@@ -34,6 +34,7 @@ app.get('/', (req, res) => {
 });
 
 // Serve static files from the React app
+const __dirname = path.resolve(); // Define __dirname for ES modules
 app.use(express.static(path.join(__dirname, 'client/build'))); // Adjust path as needed
 
 // The catch-all handler: for any request that doesn't match one above, send back index.html
