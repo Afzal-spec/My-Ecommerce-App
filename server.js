@@ -39,6 +39,7 @@ app.use(express.static(path.join(__dirname, 'client/build'))); // Adjust path as
 
 // The catch-all handler: for any request that doesn't match one above, send back index.html
 app.get('*', (req, res) => {
+    console.log(`Unhandled request: ${req.originalUrl}`); // Log the request URL
     res.sendFile(path.join(__dirname, 'client/build/index.html')); // Adjust path as needed
 });
 
