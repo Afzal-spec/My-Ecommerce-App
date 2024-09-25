@@ -9,9 +9,11 @@ import "../styles/ProductDetailsStyles.css";
 const ProductDetails = () => {
   const params = useParams();
   const navigate = useNavigate();
-  const [product, setProduct] = useState({});
+  const [product, setProduct] = useState(null);
   const [relatedProducts, setRelatedProducts] = useState([]);
   const [cart, setCart] = useCart(); // Use cart context
+  const [loading, setLoading] = useState(true); // Loading state
+  const [error, setError] = useState(null); // Error state
   const apiUrl = process.env.REACT_APP_API; // Base URL from .env
 
   // Initial product details
@@ -21,23 +23,23 @@ const ProductDetails = () => {
 
   // Get product details
   const getProduct = async () => {
+    setLoading(true); // Start loading
     try {
-      const { data } = await axios.get(
-        `/api/v1/product/get-product/${params.slug}`
-      );
+      const { data } = await axios.get(`${apiUrl}/api/v1/product/get-product/${params.slug}`);
       setProduct(data?.product);
       getSimilarProduct(data?.product._id, data?.product.category._id);
     } catch (error) {
+      setError("Failed to fetch product details. Please try again.");
       console.log(error);
+    } finally {
+      setLoading(false); // Stop loading
     }
   };
 
   // Get similar products
   const getSimilarProduct = async (pid, cid) => {
     try {
-      const { data } = await axios.get(
-        `/api/v1/product/related-product/${pid}/${cid}`
-      );
+      const { data } = await axios.get(`${apiUrl}/api/v1/product/related-product/${pid}/${cid}`);
       setRelatedProducts(data?.products);
     } catch (error) {
       console.log(error);
@@ -46,10 +48,18 @@ const ProductDetails = () => {
 
   // Add to cart function
   const handleAddToCart = (product) => {
-    setCart([...cart, product]);
-    localStorage.setItem("cart", JSON.stringify([...cart, product]));
-    toast.success("Item added to cart!"); // Show success message
+    if (!cart.some(item => item._id === product._id)) {
+      setCart([...cart, product]);
+      localStorage.setItem("cart", JSON.stringify([...cart, product]));
+      toast.success("Item added to cart!"); // Show success message
+    } else {
+      toast.error("Item is already in the cart!"); // Show error message
+    }
   };
+
+  if (loading) return <div className="text-center">Loading...</div>; // Loading UI
+  if (error) return <div className="text-center text-danger">{error}</div>; // Error UI
+  if (!product) return <div className="text-center">Product not found.</div>; // Fallback for no product
 
   return (
     <Layout>
