@@ -13,9 +13,13 @@ const Search = () => {
 
   // Function to handle adding to cart
   const handleAddToCart = (product) => {
-    setCart([...cart, product]);
-    localStorage.setItem("cart", JSON.stringify([...cart, product]));
-    toast.success("Item Added to cart");
+    if (!cart.some(item => item._id === product._id)) {
+      setCart([...cart, product]);
+      localStorage.setItem("cart", JSON.stringify([...cart, product]));
+      toast.success("Item added to cart");
+    } else {
+      toast.error("Item is already in the cart!"); // Prevent duplicates
+    }
   };
 
   return (
@@ -26,13 +30,13 @@ const Search = () => {
           <h6>
             {values?.results.length < 1
               ? "No Products Found"
-              : `Found ${values?.results.length}`}
+              : `Found ${values.results.length}`}
           </h6>
           <div className="d-flex flex-wrap mt-4">
             {values?.results.map((p) => (
               <div className="card m-2" style={{ width: "18rem" }} key={p._id}>
                 <img
-                  src={`${apiUrl}/api/v1/product/product-photo/${p._id}`} // Updated src to use base URL
+                  src={`${apiUrl}/api/v1/product/product-photo/${p._id}`} // Use base URL for images
                   className="card-img-top"
                   alt={p.name}
                 />
@@ -41,7 +45,7 @@ const Search = () => {
                   <p className="card-text">
                     {p.description.substring(0, 30)}...
                   </p>
-                  <p className="card-text"> ${p.price}</p>
+                  <p className="card-text">${p.price?.toLocaleString("en-US")}</p>
                   <button
                     className="btn btn-primary ms-1"
                     onClick={() => navigate(`/product/${p.slug}`)} // Navigate to product details
