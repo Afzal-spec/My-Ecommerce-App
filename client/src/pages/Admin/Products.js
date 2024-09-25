@@ -7,15 +7,23 @@ import { Link } from "react-router-dom";
 
 const Products = () => {
   const [products, setProducts] = useState([]);
+  const [loading, setLoading] = useState(true); // Loading state
 
   // Get all products
   const getAllProducts = async () => {
+    setLoading(true);
     try {
       const { data } = await axios.get(`${process.env.REACT_APP_API}/api/v1/product/get-product`);
-      setProducts(data.products);
+      if (data?.success) {
+        setProducts(data.products);
+      } else {
+        toast.error(data?.message || "Failed to load products.");
+      }
     } catch (error) {
-      console.log(error);
-      toast.error("Something Went Wrong");
+      console.error("Error fetching products:", error);
+      toast.error("Something went wrong while fetching products.");
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -24,18 +32,21 @@ const Products = () => {
     getAllProducts();
   }, []);
 
+  if (loading) {
+    return <div className="text-center">Loading products...</div>; // Loading feedback
+  }
+
   return (
     <Layout>
       <div className="row dashboard">
         <div className="col-md-3">
           <AdminMenu />
         </div>
-        <div className="col-md-9 ">
+        <div className="col-md-9">
           <h1 className="text-center">All Products List</h1>
           <div className="d-flex flex-wrap">
             {products?.map((p) => {
               const imageUrl = `${process.env.REACT_APP_API}/api/v1/product/product-photo/${p._id}`;
-              console.log(imageUrl); // Log the image URL
               return (
                 <Link
                   key={p._id}
