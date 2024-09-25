@@ -8,26 +8,29 @@ import moment from "moment";
 const Orders = () => {
   const [orders, setOrders] = useState([]);
   const [auth] = useAuth(); // Destructure to get auth directly
+  const apiUrl = process.env.REACT_APP_API; // Base URL from .env
 
   // Function to get orders
   const getOrders = async () => {
+    if (!auth.token) {
+      console.error("No authorization token available");
+      return;
+    }
     try {
-      const { data } = await axios.get(`${process.env.REACT_APP_API}/api/v1/auth/orders`, {
+      const { data } = await axios.get(`${apiUrl}/api/v1/auth/orders`, {
         headers: {
           Authorization: `Bearer ${auth.token}`, // Add authorization header
         },
       });
       setOrders(data);
     } catch (error) {
-      console.error("Error fetching orders:", error); // Improved error logging
+      console.error("Error fetching orders:", error.response ? error.response.data : error.message); // Improved error logging
     }
   };
 
   useEffect(() => {
-    if (auth?.token) getOrders();
-  }, [auth?.token]);
-
-  const apiUrl = process.env.REACT_APP_API; // Base URL from .env
+    getOrders(); // Fetch orders when component mounts or auth token changes
+  }, [auth.token]);
 
   return (
     <Layout title={"Your Orders"}>
