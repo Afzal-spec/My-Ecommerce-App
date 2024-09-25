@@ -10,7 +10,7 @@ import toast from "react-hot-toast";
 const { Option } = Select;
 
 const AdminOrders = () => {
-  const [status, setStatus] = useState([
+  const [statusOptions] = useState([
     "Not Process",
     "Processing",
     "Shipped",
@@ -23,10 +23,11 @@ const AdminOrders = () => {
 
   const getOrders = async () => {
     try {
-      const { data } = await axios.get("/api/v1/auth/all-orders");
+      const { data } = await axios.get(`${apiUrl}/api/v1/auth/all-orders`);
       setOrders(data);
     } catch (error) {
-      console.log(error);
+      console.error(error);
+      toast.error("Failed to load orders");
     }
   };
 
@@ -36,13 +37,13 @@ const AdminOrders = () => {
 
   const handleChange = async (orderId, value) => {
     try {
-      await axios.put(`/api/v1/auth/order-status/${orderId}`, {
+      await axios.put(`${apiUrl}/api/v1/auth/order-status/${orderId}`, {
         status: value,
       });
       toast.success("Order status updated");
       getOrders();
     } catch (error) {
-      console.log(error);
+      console.error(error);
       toast.error("Failed to update status");
     }
   };
@@ -55,8 +56,8 @@ const AdminOrders = () => {
         </div>
         <div className="col-md-9">
           <h1 className="text-center">All Orders</h1>
-          {orders?.map((o, i) => (
-            <div className="border shadow" key={o._id}>
+          {orders?.map((order, index) => (
+            <div className="border shadow mb-3" key={order._id}>
               <table className="table">
                 <thead>
                   <tr>
@@ -70,43 +71,43 @@ const AdminOrders = () => {
                 </thead>
                 <tbody>
                   <tr>
-                    <td>{i + 1}</td>
+                    <td>{index + 1}</td>
                     <td>
                       <Select
                         bordered={false}
-                        onChange={(value) => handleChange(o._id, value)}
-                        defaultValue={o?.status}
+                        onChange={(value) => handleChange(order._id, value)}
+                        defaultValue={order.status}
                       >
-                        {status.map((s, i) => (
-                          <Option key={i} value={s}>
-                            {s}
+                        {statusOptions.map((status, idx) => (
+                          <Option key={idx} value={status}>
+                            {status}
                           </Option>
                         ))}
                       </Select>
                     </td>
-                    <td>{o?.buyer?.name}</td>
-                    <td>{moment(o?.createAt).fromNow()}</td>
-                    <td>{o?.payment.success ? "Success" : "Failed"}</td>
-                    <td>{o?.products?.length}</td>
+                    <td>{order.buyer?.name}</td>
+                    <td>{moment(order.createAt).fromNow()}</td>
+                    <td>{order.payment.success ? "Success" : "Failed"}</td>
+                    <td>{order.products?.length}</td>
                   </tr>
                 </tbody>
               </table>
               <div className="container">
-                {o?.products?.map((p) => (
-                  <div className="row mb-2 p-3 card flex-row" key={p._id}>
+                {order.products?.map((product) => (
+                  <div className="row mb-2 p-3 card flex-row" key={product._id}>
                     <div className="col-md-4">
                       <img
-                        src={`${apiUrl}/api/v1/product/product-photo/${p._id}`} // Updated src to use base URL
+                        src={`${apiUrl}/api/v1/product/product-photo/${product._id}`} // Updated src to use base URL
                         className="card-img-top"
-                        alt={p.name}
-                        width="100px"
-                        height={"100px"}
+                        alt={product.name}
+                        width="100"
+                        height="100"
                       />
                     </div>
                     <div className="col-md-8">
-                      <p>{p.name}</p>
-                      <p>{p.description.substring(0, 30)}</p>
-                      <p>Price: {p.price}</p>
+                      <p>{product.name}</p>
+                      <p>{product.description.substring(0, 30)}...</p>
+                      <p>Price: ${product.price}</p>
                     </div>
                   </div>
                 ))}
