@@ -10,8 +10,10 @@ const CategoryProduct = () => {
   const params = useParams();
   const navigate = useNavigate();
   const [products, setProducts] = useState([]);
-  const [category, setCategory] = useState([]);
+  const [category, setCategory] = useState({});
   const [cart, setCart] = useCart(); // Initialize cart context
+  const [loading, setLoading] = useState(true); // Loading state
+  const [error, setError] = useState(null); // Error state
   const apiUrl = process.env.REACT_APP_API; // Base URL from .env
 
   useEffect(() => {
@@ -19,28 +21,34 @@ const CategoryProduct = () => {
   }, [params?.slug]);
 
   const getProductsByCat = async () => {
+    setLoading(true); // Start loading
     try {
-      const { data } = await axios.get(
-        `/api/v1/product/product-category/${params.slug}`
-      );
+      const { data } = await axios.get(`${apiUrl}/api/v1/product/product-category/${params.slug}`); // Use base URL
       setProducts(data?.products);
       setCategory(data?.category);
+      setLoading(false); // Stop loading
     } catch (error) {
+      setError("Failed to fetch products. Please try again.");
       console.log(error);
+      setLoading(false); // Stop loading on error
     }
   };
 
   const handleAddToCart = (product) => {
-    setCart([...cart, product]);
-    localStorage.setItem("cart", JSON.stringify([...cart, product]));
+    const updatedCart = [...cart, product];
+    setCart(updatedCart);
+    localStorage.setItem("cart", JSON.stringify(updatedCart));
     toast.success("Item Added to cart");
   };
+
+  if (loading) return <div className="text-center">Loading...</div>; // Loading UI
+  if (error) return <div className="text-center text-danger">{error}</div>; // Error UI
 
   return (
     <Layout>
       <div className="container mt-3 category">
         <h4 className="text-center">Category - {category?.name}</h4>
-        <h6 className="text-center">{products?.length} result found</h6>
+        <h6 className="text-center">{products?.length} result(s) found</h6>
         <div className="row">
           <div className="col-md-9 offset-1">
             <div className="d-flex flex-wrap">
