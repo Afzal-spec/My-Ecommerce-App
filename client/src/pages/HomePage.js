@@ -19,11 +19,12 @@ const HomePage = () => {
   const [total, setTotal] = useState(0);
   const [page, setPage] = useState(1);
   const [loading, setLoading] = useState(false);
+  const apiUrl = process.env.REACT_APP_API; // Base URL from .env
 
   // Get all categories
   const getAllCategory = async () => {
     try {
-      const { data } = await axios.get("/api/v1/category/get-category");
+      const { data } = await axios.get(`${apiUrl}/api/v1/category/get-category`);
       if (data?.success) {
         setCategories(data?.category);
       }
@@ -32,16 +33,11 @@ const HomePage = () => {
     }
   };
 
-  useEffect(() => {
-    getAllCategory();
-    getTotal();
-  }, []);
-
   // Get products
   const getAllProducts = async () => {
     try {
       setLoading(true);
-      const { data } = await axios.get(`/api/v1/product/product-list/${page}`);
+      const { data } = await axios.get(`${apiUrl}/api/v1/product/product-list/${page}`);
       setLoading(false);
       setProducts(data.products);
     } catch (error) {
@@ -53,12 +49,17 @@ const HomePage = () => {
   // Get total count
   const getTotal = async () => {
     try {
-      const { data } = await axios.get("/api/v1/product/product-count");
+      const { data } = await axios.get(`${apiUrl}/api/v1/product/product-count`);
       setTotal(data?.total);
     } catch (error) {
       console.log(error);
     }
   };
+
+  useEffect(() => {
+    getAllCategory();
+    getTotal();
+  }, []);
 
   useEffect(() => {
     if (page === 1) return;
@@ -69,12 +70,12 @@ const HomePage = () => {
   const loadMore = async () => {
     try {
       setLoading(true);
-      const { data } = await axios.get(`/api/v1/product/product-list/${page}`);
+      const { data } = await axios.get(`${apiUrl}/api/v1/product/product-list/${page}`);
       setLoading(false);
       setProducts([...products, ...data?.products]);
     } catch (error) {
-      console.log(error);
       setLoading(false);
+      console.log(error);
     }
   };
 
@@ -100,7 +101,7 @@ const HomePage = () => {
   // Get filtered products
   const filterProduct = async () => {
     try {
-      const { data } = await axios.post("/api/v1/product/product-filters", {
+      const { data } = await axios.post(`${apiUrl}/api/v1/product/product-filters`, {
         checked,
         radio,
       });
@@ -109,8 +110,6 @@ const HomePage = () => {
       console.log(error);
     }
   };
-
-  const apiUrl = process.env.REACT_APP_API; // Base URL from .env
 
   return (
     <Layout title={"All Products - Best offers"}>
@@ -153,7 +152,7 @@ const HomePage = () => {
             </button>
           </div>
         </div>
-        <div className="col-md-9 ">
+        <div className="col-md-9">
           <h1 className="text-center">All Products</h1>
           <div className="d-flex flex-wrap">
             {products?.map((p) => (
@@ -173,7 +172,7 @@ const HomePage = () => {
                       })}
                     </h5>
                   </div>
-                  <p className="card-text ">
+                  <p className="card-text">
                     {p.description.substring(0, 60)}...
                   </p>
                   <div className="card-name-price">
@@ -186,11 +185,9 @@ const HomePage = () => {
                     <button
                       className="btn btn-dark ms-1"
                       onClick={() => {
-                        setCart([...cart, p]);
-                        localStorage.setItem(
-                          "cart",
-                          JSON.stringify([...cart, p])
-                        );
+                        const updatedCart = [...cart, p];
+                        setCart(updatedCart);
+                        localStorage.setItem("cart", JSON.stringify(updatedCart));
                         toast.success("Item Added to cart");
                       }}
                     >
@@ -214,7 +211,7 @@ const HomePage = () => {
                   "Loading ..."
                 ) : (
                   <>
-                    Loadmore <AiOutlineReload />
+                    Load more <AiOutlineReload />
                   </>
                 )}
               </button>

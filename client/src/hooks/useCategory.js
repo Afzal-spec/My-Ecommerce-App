@@ -1,16 +1,22 @@
 import { useState, useEffect } from "react";
 import axios from "axios";
+import toast from "react-hot-toast";
 
-export default function useCategory() {
+const useCategory = () => {
   const [categories, setCategories] = useState([]);
 
-  //get cat
+  // Get categories
   const getCategories = async () => {
     try {
-      const { data } = await axios.get("/api/v1/category/get-category");
-      setCategories(data?.category);
+      const { data } = await axios.get(`${process.env.REACT_APP_API}/api/v1/category/get-category`);
+      if (data?.success) {
+        setCategories(data.category);
+      } else {
+        toast.error(data.message || "Failed to load categories");
+      }
     } catch (error) {
-      console.log(error);
+      console.error("Error fetching categories:", error);
+      toast.error("Something went wrong while fetching categories");
     }
   };
 
@@ -19,4 +25,6 @@ export default function useCategory() {
   }, []);
 
   return categories;
-}
+};
+
+export default useCategory;
